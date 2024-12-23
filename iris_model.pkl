@@ -1,0 +1,33 @@
+# Importer les packages nécessaires
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import joblib
+
+# Charger les données
+df = pd.read_csv('iris.csv')
+
+# Séparer les caractéristiques (features) et la cible (target)
+X = df.drop('species', axis=1)  # Caractéristiques
+y = df['species']  # Cible
+
+# Diviser les données en ensemble d'entraînement et ensemble de test
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Créer un modèle de forêt aléatoire
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# Entraîner le modèle
+model.fit(X_train, y_train)
+
+# Prédire sur les données de test
+y_pred = model.predict(X_test)
+
+# Évaluer la précision du modèle
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Model accuracy: {accuracy * 100:.2f}%")
+
+# Sauvegarder le modèle avec joblib
+joblib.dump(model, 'iris_model.pkl')
+print("Model saved as iris_model.pkl")

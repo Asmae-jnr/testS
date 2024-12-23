@@ -1,7 +1,9 @@
-# Import the required packages
 import streamlit as st
 import pandas as pd
 import altair as alt
+import joblib
+import numpy as np
+import os
 
 # Page configuration
 st.set_page_config(
@@ -11,9 +13,10 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Dark mode for Altair charts
 alt.themes.enable("dark")
 
-# Load data
+# Load dataset
 df = pd.read_csv('iris.csv', delimiter=',')
 
 # Initialize page_selection in session state if not already set
@@ -47,11 +50,20 @@ with st.sidebar:
 
     # Project Details
     st.subheader("Abstract")
-    st.markdown("A Streamlit dashboard highlighting the results of a training two classification models using the Iris flower dataset from Kaggle.")
+    st.markdown("A Streamlit dashboard highlighting the results of training two classification models using the Iris flower dataset from Kaggle.")
     st.markdown("📊 [Dataset](https://www.kaggle.com/datasets/arshid/iris-flower-dataset)")
     st.markdown("📗 [Google Colab Notebook](https://colab.research.google.com/drive/1KJDBrx3akSPUW42Kbeepj64ZisHFD-NV?usp=sharing)")
     st.markdown("🐙 [GitHub Repository](https://github.com/Zeraphim/Streamlit-Iris-Classification-Dashboard)")
     st.markdown("by: [Zeraphim](https://jcdiamante.com)")
+
+# Load your trained model (replace with your actual model path)
+try:
+    if os.path.exists('model.pkl'):  # Check if the model file exists
+        model = joblib.load('model.pkl')
+    else:
+        st.error("Le fichier 'model.pkl' est introuvable. Assurez-vous qu'il est présent dans le répertoire du projet.")
+except Exception as e:
+    st.error(f"Erreur lors du chargement du modèle : {e}")
 
 # Display Content Based on Page Selection
 if st.session_state.page_selection == 'about':
@@ -83,7 +95,24 @@ elif st.session_state.page_selection == 'machine_learning':
 
 elif st.session_state.page_selection == 'prediction':
     st.title("Prediction")
-    st.write("Tester des prédictions sur le modèle entraîné.")
+    st.write("Utilisez les curseurs pour tester des prédictions sur le modèle entraîné.")
+
+    # Create sliders for each feature
+    petal_length = st.slider("Petal Length (cm)", min_value=0.0, max_value=7.0, value=1.5, step=0.1)
+    petal_width = st.slider("Petal Width (cm)", min_value=0.0, max_value=3.0, value=0.2, step=0.1)
+    sepal_length = st.slider("Sepal Length (cm)", min_value=4.0, max_value=8.0, value=5.0, step=0.1)
+    sepal_width = st.slider("Sepal Width (cm)", min_value=2.0, max_value=5.0, value=3.0, step=0.1)
+
+    # Prepare the input data as a 2D array
+    input_data = np.array([[sepal_length, sepal_width, petal_length, petal_width]])
+
+    try:
+        # Predict the class using the trained model
+        prediction = model.predict(input_data)
+        # Display the prediction
+        st.write(f"Prediction: *{prediction[0]}*")
+    except Exception as e:
+        st.error(f"Erreur lors de la prédiction : {e}")
 
 elif st.session_state.page_selection == 'conclusion':
     st.title("Conclusion")
